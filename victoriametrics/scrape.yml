@@ -12,8 +12,8 @@ scrape_configs:
       module: [http_2xx]
     static_configs:
       - targets:
-          - https://github.com
-          - https://www.cloudflare.com
+          - https://lobot.cs.queensu.ca/healthz
+          - https://cs.queensu.ca
     relabel_configs: &blackbox_relabel
       - source_labels: [__address__]
         target_label: __param_target
@@ -28,7 +28,7 @@ scrape_configs:
     params:
       module: [icmp]
     static_configs:
-      - targets: [1.1.1.1, 8.8.8.8]
+      - targets: [130.15.1.1]
     relabel_configs: *blackbox_relabel
 
   # Uptime Kuma's /metrics needs an API key (Settings -> API Keys in Kuma).

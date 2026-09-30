@@ -6,21 +6,21 @@ menu = Top
 title = hopwatch SmokePing
 remark = Reference latency/loss graphs, kept alongside the Grafana dashboards for comparison.
 
-+ Internet
-menu = Internet
-title = Internet targets
++ Queens
+menu = Queen's
+title = Queen's University targets
 
-++ CloudflareDNS
-menu = Cloudflare DNS
-title = Cloudflare DNS (1.1.1.1)
-host = 1.1.1.1
+++ QSCFirewall
+menu = QSC firewall
+title = QSC firewall (130.15.1.1)
+host = 130.15.1.1
 
-++ GoogleDNS
-menu = Google DNS
-title = Google DNS (8.8.8.8)
-host = 8.8.8.8
+++ Lobot
+menu = lobot
+title = lobot.cs.queensu.ca
+host = lobot.cs.queensu.ca
 
-++ GitHub
-menu = GitHub
-title = github.com
-host = github.com
+++ QSCWeb
+menu = cs.queensu.ca
+title = cs.queensu.ca
+host = cs.queensu.ca
