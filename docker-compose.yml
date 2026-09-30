@@ -1,0 +1,84 @@
+name: hopwatch
+
+# Ports are bound to 127.0.0.1 only. Remove the prefix to expose them on your LAN,
+# after changing the Grafana admin password.
+
+services:
+  collector:
+    build: ./collector
+    restart: unless-stopped
+    volumes:
+      - ./config/hopwatch.yml:/config/hopwatch.yml:ro
+    environment:
+      GLOBALPING_TOKEN: ${GLOBALPING_TOKEN:-}
+    depends_on:
+      - victoriametrics
+    # On a Linux host, uncomment so the first hops are your real network instead of
+    # Docker's bridge. (Then set HOPWATCH_PUSH_URL=http://127.0.0.1:8428/api/v1/import/prometheus)
+    # network_mode: host
+
+  victoriametrics:
+    image: victoriametrics/victoria-metrics:v1.153.0
+    restart: unless-stopped
+    command:
+      - -storageDataPath=/storage
+      - -retentionPeriod=${RETENTION:-1y}
+      - -promscrape.config=/etc/vm/scrape.yml
+    volumes:
+      - vm-data:/storage
+      - ./victoriametrics/scrape.yml:/etc/vm/scrape.yml:ro
+      - ./secrets:/etc/vm/secrets:ro
+    ports:
+      - 127.0.0.1:8428:8428
+
+  grafana:
+    image: grafana/grafana:13.0.10
+    restart: unless-stopped
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:-admin}
+      GF_DASHBOARDS_DEFAULT_HOME_DASHBOARD_PATH: /var/lib/grafana/dashboards/hopwatch.json
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./grafana/dashboards:/var/lib/grafana/dashboards:ro
+    ports:
+      - 127.0.0.1:3000:3000
+    depends_on:
+      - victoriametrics
+
+  blackbox:
+    image: prom/blackbox-exporter:v0.28.0
+    restart: unless-stopped
+    command: --config.file=/etc/blackbox/blackbox.yml
+    volumes:
+      - ./blackbox/blackbox.yml:/etc/blackbox/blackbox.yml:ro
+    sysctls:
+      # lets the non-root exporter send ICMP via unprivileged ping sockets
+      net.ipv4.ping_group_range: "0 2147483647"
+
+  uptime-kuma:
+    image: louislam/uptime-kuma:2.5.5
+    restart: unless-stopped
+    volumes:
+      - kuma-data:/app/data
+    ports:
+      - 127.0.0.1:3001:3001
+
+  # Optional: docker compose --profile smokeping up -d
+  smokeping:
+    profiles: [smokeping]
+    image: lscr.io/linuxserver/smokeping:2.9.0
+    restart: unless-stopped
+    environment:
+      TZ: ${TZ:-Etc/UTC}
+    volumes:
+      - ./smokeping/Targets:/config/Targets:ro
+      - smokeping-data:/data
+    ports:
+      - 127.0.0.1:8080:80
+
+volumes:
+  vm-data:
+  grafana-data:
+  kuma-data:
+  smokeping-data:

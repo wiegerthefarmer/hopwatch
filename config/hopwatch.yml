@@ -1,0 +1,38 @@
+# hopwatch collector configuration
+#
+# Every target is traced from every enabled source (local + each Globalping location).
+# `name` becomes the "target" label in metrics, so keep it stable.
+
+targets:
+  - name: cloudflare-dns
+    host: 1.1.1.1
+  - name: google-dns
+    host: 8.8.8.8
+  - name: github-https
+    host: github.com
+    protocol: tcp # icmp (default) | tcp | udp
+    port: 443
+  # - name: my-server
+  #   host: example.com
+  #   ip_version: 4       # force IPv4/IPv6 (Globalping: hostnames only)
+
+local:
+  enabled: true
+  source: local # label value; rename to where this box lives, e.g. "home" or "office"
+  interval: 60 # seconds between runs per target
+  cycles: 10 # probes per hop per run (mtr -c); a run takes roughly this many seconds
+  asn_lookup: false # adds AS numbers via DNS lookups to Team Cymru
+  max_parallel: 4
+
+globalping:
+  # Remote mtr from https://globalping.io probes. Each result = 1 test.
+  # Anonymous limit is 250 tests/hour; set GLOBALPING_TOKEN in .env for more.
+  # Budget: locations x targets x (3600 / interval). Defaults below: 3 x 3 x 4 = 36/h.
+  enabled: false
+  interval: 900
+  packets: 3 # 1-16
+  locations:
+    - Frankfurt # shorthand: source label becomes "gp-frankfurt"
+    - New York
+    - name: gp-sydney # or give the label explicitly
+      magic: Sydney # any Globalping "magic" location: city, country, ASN, cloud region...

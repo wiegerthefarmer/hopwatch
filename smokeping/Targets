@@ -1,0 +1,26 @@
+*** Targets ***
+
+probe = FPing
+
+menu = Top
+title = hopwatch SmokePing
+remark = Reference latency/loss graphs, kept alongside the Grafana dashboards for comparison.
+
++ Internet
+menu = Internet
+title = Internet targets
+
+++ CloudflareDNS
+menu = Cloudflare DNS
+title = Cloudflare DNS (1.1.1.1)
+host = 1.1.1.1
+
+++ GoogleDNS
+menu = Google DNS
+title = Google DNS (8.8.8.8)
+host = 8.8.8.8
+
+++ GitHub
+menu = GitHub
+title = github.com
+host = github.com

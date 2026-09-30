@@ -1,0 +1,9 @@
+apiVersion: 1
+
+providers:
+  - name: hopwatch
+    folder: hopwatch
+    type: file
+    allowUiUpdates: true # edits in the UI are kept until the next restart; export JSON to persist
+    options:
+      path: /var/lib/grafana/dashboards

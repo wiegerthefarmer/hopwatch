@@ -1,0 +1,41 @@
+# Prometheus-style scrape config used by VictoriaMetrics (-promscrape.config).
+# The hopwatch collector does NOT appear here: it pushes its results directly.
+
+global:
+  scrape_interval: 30s
+
+scrape_configs:
+  # HTTP/S checks: status, timing per phase (dns/connect/tls/processing/transfer), cert expiry.
+  - job_name: blackbox-http
+    metrics_path: /probe
+    params:
+      module: [http_2xx]
+    static_configs:
+      - targets:
+          - https://github.com
+          - https://www.cloudflare.com
+    relabel_configs: &blackbox_relabel
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - target_label: __address__
+        replacement: blackbox:9115
+
+  # Plain ICMP ping, every 30s: finer-grained than mtr for spotting short blips.
+  - job_name: blackbox-icmp
+    metrics_path: /probe
+    params:
+      module: [icmp]
+    static_configs:
+      - targets: [1.1.1.1, 8.8.8.8]
+    relabel_configs: *blackbox_relabel
+
+  # Uptime Kuma's /metrics needs an API key (Settings -> API Keys in Kuma).
+  # Put the key alone in ./secrets/kuma_api_key; until then this target shows as down.
+  - job_name: uptime-kuma
+    static_configs:
+      - targets: [uptime-kuma:3001]
+    basic_auth:
+      username: hopwatch
+      password_file: /etc/vm/secrets/kuma_api_key
